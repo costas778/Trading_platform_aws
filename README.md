@@ -25,7 +25,7 @@ whilst minimising human errors and repetition?
 # Your setup will be similar to the following:
 
 #tree
-- ├── Bash.txt
+```├── Bash.txt
 ├── README.md
 ├── backups
 │   ├── backup_20250214_132556.tar.gz
@@ -259,7 +259,7 @@ whilst minimising human errors and repetition?
 ├── terraform-setup.sh
 ├── test-infrastructure.sh
 ├── update-deployments.sh
-└── validate-manifests.old
+└── validate-manifests.old ```
 
 73 directories, 163 files
 costas778@LIT-CY-03:~/abc/trading-platform$ 
