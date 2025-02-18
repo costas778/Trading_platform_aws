@@ -289,6 +289,8 @@ git clone https://github.com/costas778/Trading_platform_aws.git
 1) Ensure your AWS setup is no issue
 First, check if there are any conflicting AWS environment variables:
 
+I find this a useful exercise as I use various sandbox environments to create and update cpde which is on a timer.
+
 env | grep AWS
 
 Clear any existing AWS environment variables:
@@ -310,6 +312,7 @@ aws configure
 
 
 2) Clear any old terraform files
+tip: use multiple bash shells concurrently for this provisioning.
 
 cd ~/abc/trading-platform/infrastructure/terraform/environments/dev$
 
