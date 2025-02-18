@@ -645,16 +645,5 @@ kubectl create secret tls trading-platform-certs \
     --cert=tls.crt \
     --key=tls.key
 
-For the ECR image issue, you'll need your ECR repository URL:
-
-# Get your ECR repository URL
-aws ecr describe-repositories \
-    --region us-east-1 \
-    --query 'repositories[?contains(repositoryName, `api-gateway`)].repositoryUri' \
-    --output text
-
-# Then update the deployment with the correct URL
-kubectl set image deployment/api-gateway \
-    api-gateway=<ECR_REPO_URL>/api-gateway:latest
 
 
