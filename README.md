@@ -542,7 +542,8 @@ kubectl get pods --all-namespaces
 
 11) Dealing with the inital pod issue (certificates)
 
-![error1.png](https://github.com/costas778/Trading_platform_aws/blob/main/error1.png?raw=true)
+![Error Screenshot](https://raw.githubusercontent.com/costas778/Trading_platform_aws/main/error1.png)
+
 
 When you run kubectl get pods --all-namespaces you will see many pods NOT running! 
 
