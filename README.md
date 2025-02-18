@@ -1,4 +1,4 @@
-![Alt Text](./jsb2.png)
+![Alt Text](./Screenshot 2025-02-18 192023.png)
 
 ## Scenario:
 The company ABC Limited operates within the Fin-tech industry offers its own Trading platform as
