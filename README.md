@@ -284,4 +284,303 @@ This project uses a number of different configuration files:
 
 
 
+1) Ensure your AWS setup is no issue
+First, check if there are any conflicting AWS environment variables:
+
+env | grep AWS
+
+Clear any existing AWS environment variables:
+
+unset AWS_ACCESS_KEY_ID
+unset AWS_SECRET_ACCESS_KEY
+unset AWS_SESSION_TOKEN
+unset AWS_SECURITY_TOKEN
+
+Remove the existing credentials:
+
+rm -rf ~/.aws/credentials
+rm -rf ~/.aws/config
+
+
+Reconfigure AWS CLI:
+
+aws configure
+
+
+2) Clear any old terraform files
+
+cd ~/abc/trading-platform/infrastructure/terraform/environments/dev$
+
+
+# 1. Remove the .terraform directory (contains providers and modules)
+rm -rf .terraform/
+
+# 2. Remove all state files
+rm -f terraform.tfstate
+rm -f terraform.tfstate.backup
+
+# 3. Remove the lock file
+rm -f .terraform.lock.hcl
+
+# 4. If you want to be thorough, remove crash log files too
+rm -f crash.log
+
+
+3) Obtain the hosted zone details
+
+aws route53 create-hosted-zone --name abc-trading-dev.com --caller-reference $(date +%s)
+
+{
+    "Location": "https://route53.amazonaws.com/2013-04-01/hostedzone/Z097448413EYC12C8OCQ4",
+    "HostedZone": {
+        "Id": "/hostedzone/Z097448413EYC12C8OCQ4",
+        "Name": "abc-trading-dev.com.",
+        "CallerReference": "1739788255",
+        "Config": {
+            "PrivateZone": false
+        },
+        "ResourceRecordSetCount": 2
+    },
+    "ChangeInfo": {
+        "Id": "/change/C00905481JW2DOJJAMZIQ",
+        "Status": "PENDING",
+        "SubmittedAt": "2025-02-17T10:30:55.677000+00:00"
+    },
+    "DelegationSet": {
+
+4) Obtain subnet details and place them within the infrastructure > terraform > environments > dev* > main.tf file
+
+
+* or staging or Production depending on your deployment
+
+aws ec2 describe-subnets --query 'Subnets[*].[SubnetId,VpcId,AvailabilityZone,CidrBlock]' --output table
+
+For example:
+
+module "eks" {
+  source = "../../modules/eks"
+  
+  project_name       = var.project_name
+  environment        = var.environment
+  kubernetes_version = var.kubernetes_version
+  subnet_ids        = [
+    "subnet-0363c8537df9f3e34",  # us-east-1a
+    "subnet-064d7dec2f261f295",   # us-east-1b
+    "subnet-0b4cde3ea1aa2e226"   # us-east-1c
+
+Note: I use 1a to 1c in this example
+
+
+5) fill the placeholder information in various files with unique values
+
+set-env.sh
+
+#!/bin/bash
+# AWS credentials
+export AWS_ACCESS_KEY_ID="AKIA2UC3ACJ4OT5VV76B"
+export AWS_SECRET_ACCESS_KEY="VeshtaINlSzsdYBa5Hv+VO+i7qh5hHzux0QPClex"
+export AWS_DEFAULT_REGION="us-east-1"
+
+# Sensitive variables
+export TF_VAR_database_password="Harvee777"
+
+# Application runtime configuration
+export BUILD_VERSION="1.0.0"
+export DOMAIN_NAME="abc-trading-dev.com"
+export HOSTED_ZONE_ID="Z01828013463Z9CPR1858"
+
+# Infrastructure configuration
+export TF_STATE_BUCKET="bucket730335285880"
+export TF_LOCK_TABLE="terraform-state-lock"
+export CLUSTER_NAME="abc-trading-dev"
+export MICROSERVICES="axon-server backend-services frontend"
+
+Note: I use the number of the account to create a unique bucket name.
+
+
+
+
+
+.env
+
+# Application runtime configuration
+BUILD_VERSION=1.0.0
+DOMAIN_NAME=abc-trading-dev.com
+HOSTED_ZONE_ID="Z01828013463Z9CPR1858"
+
+# AWS Configuration
+TF_STATE_BUCKET="bucket730335285880"
+TF_LOCK_TABLE="terraform-state-lock"
+AWS_DEFAULT_REGION="us-east-1"
+
+# Cluster Configuration
+CLUSTER_NAME="abc-trading-dev"
+MICROSERVICES="axon-server backend-services frontend"
+
+# Database Configuration
+DB_USERNAME="dbmaster"  # From terraform.tfvars
+DB_PASSWORD="${TF_VAR_database_password}"  # From set-env.sh (Harvee777)
+DB_PORT="5432"  # Standard PostgreSQL port
+DB_INSTANCE_NAME="db_dev_730335285880"  # From terraform.tfvars
+
+# Service Groups (new additions needed for microservices architecture)
+CORE_SERVICES="authentication authorization user-management"
+DEPENDENT_SERVICES="api-gateway audit cache compliance logging market-data message-queue"
+BUSINESS_SERVICES="order-management portfolio-management position-management price-feed quote-service reporting risk-management settlement trade-execution notification"
+
+# Legacy Configuration
+MICROSERVICES="axon-server backend-services frontend"
+
+
+infrastructure > terraform > environments > dev > terraform.tfvars
+
+# Infrastructure configuration
+aws_region          = "us-east-1"
+environment         = "dev"
+project_name        = "abc-trading"
+cluster_name        = "abc-trading-dev"
+vpc_cidr            = "10.0.0.0/16"
+database_name       = "db_dev_730335285880"
+database_username   = "dbmaster"
+
+availability_zones  = ["us-east-1a", "us-east-1b", "us-east-1c"]
+
+# EKS configuration
+kubernetes_version  = "1.28"
+node_instance_type = "t3.medium"
+node_desired_size  = 2
+node_min_size      = 1
+node_max_size      = 4
+
+# RDS configuration
+db_instance_class  = "db.t3.medium"
+db_storage        = 20
+
+Then once you have filled in the place holders run source set-env.sh to set the above values to
+be global to the application.
+
+6) Run test-infrastructure.sh to see that all the global variables are in place.
+
+7) Ensure you have all the prerequisites installed by running install-prerequisites.sh if this is your first time
+working on a system
+
+8) Run the wrapper main.sh file with the deployment type.
+
+e.g. ./main.sh dev
+
+At the end run the following you will get the following:
+
+Deploying database infrastructure...
+Initializing the backend...
+Initializing modules...
+╷
+│ Error: Backend configuration changed
+│ 
+│ A change in the backend configuration has been detected, which may require migrating existing state.
+│ 
+│ If you wish to attempt automatic migration of the state, use "terraform init -migrate-state".
+│ If you wish to store the current configuration with no changes to the state, use "terraform init -reconfigure".
+
+~/abc/trading-platform/infrastructure/terraform/environments/dev$ terraform init -reconfigure
+
+Note: the directory will depend on the type of deployment. In this case its a dev
+
+9) When you complete run the services after the initial provision to give you a total of 24 services
+
+# Count total services
+kubectl get services --all-namespaces | wc -l
+
+# Name of the services
+
+kubectl get services --all-namespaces
+or  kubectl get svc -A
+
+better still
+kubectl get svc -A -o custom-columns=NAMESPACE:.metadata.namespace,NAME:.metadata.name
+
+An example of seeing services under a particular namespace
+kubectl get svc -n kube-system
+
+deploy-services.sh
+
+# Run the same command account
+kubectl get services --all-namespaces | wc -l
+
+#then the following
+kubectl get svc -A -o custom-columns=NAMESPACE:.metadata.namespace,NAME:.metadata.name
+
+10) Run various tests
+
+# Check specific services status
+for service in $(kubectl get services -o name); do
+    echo "Checking $service..."
+    kubectl describe $service
+done
+
+# List all pods running in the kube-system
+kubectl get pods -n kube-system
+
+# List all running pods
+kubectl get pods --all-namespaces
+
+est API connectivity:
+
+# Test frontend to backend communication
+kubectl exec -it $(kubectl get pod -l app=frontend -o jsonpath='{.items[0].metadata.name}') -- curl -k https://backend-service
+
+# Test backend to Axon server
+kubectl exec -it $(kubectl get pod -l app=backend -o jsonpath='{.items[0].metadata.name}') -- curl -k http://axon-server:8024/actuator/health
+
+
+Database connectivity test:
+
+# Test backend to database connection
+kubectl exec -it $(kubectl get pod -l app=backend -o jsonpath='{.items[0].metadata.name}') -- nc -zv database-service 5432
+
+
+11) Troubleshooting:
+
+kubectl get events --sort-by='.lastTimestamp'
+kubectl describe pod api-gateway-69f8b876d9-crw7d
+kubectl describe nodes
+
+# Fix image pull policy in deployments
+kubectl set image deployment/api-gateway api-gateway=your-registry/api-gateway:latest --record
+
+# Update the node group to have larger instances
+cd /home/costas778/abc/trading-platform/infrastructure/terraform/environments/dev
+terraform apply -var='node_instance_type=t3.xlarge' -auto-approve
+
+# Scale up the node group
+aws eks update-nodegroup-config --cluster-name abc-trading-dev \
+    --nodegroup-name abc-trading-dev-nodes \
+    --scaling-config desiredSize=4,minSize=3,maxSize=6
+
+connectivity
+kubectl get events --sort-by='.lastTimestamp' | grep -i "network\|connection\|pull"
+
+# Get node names
+NODES=$(kubectl get nodes -o jsonpath='{.items[*].metadata.name}')
+
+# Check connectivity from nodes
+for node in $NODES; do
+    echo "Checking connectivity for node: $node"
+    kubectl debug node/$node -it --image=busybox -- ping -c 2 8.8.8.8
+done
+
+# Get VPC ID
+VPC_ID=$(aws eks describe-cluster --name abc-trading-dev --query "cluster.resourcesVpcConfig.vpcId" --output text)
+
+# Check NAT Gateway status
+aws ec2 describe-nat-gateways --filter "Name=vpc-id,Values=$VPC_ID" --query 'NatGateways[*].[State,NatGatewayId]'
+
+# Check route tables
+aws ec2 describe-route-tables --filters "Name=vpc-id,Values=$VPC_ID" --query 'RouteTables[*].Routes'
+
+
+# Get cluster security group
+SG_ID=$(aws eks describe-cluster --name abc-trading-dev --query 'cluster.resourcesVpcConfig.clusterSecurityGroupId' --output text)
+
+# Check security group rules
+aws ec2 describe-security-groups --group-ids $SG_ID
 
