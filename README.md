@@ -692,7 +692,15 @@ kubectl delete pod <pod-name>
 
 # vertically 
 
-If you need help to increase CPU and memory resources for the pods you can use the following to apply the patch to all services using the following bash script:
+To see if this required first, check the max pods per node setting:
+
+kubectl get nodes -o json | jq '.items[].status.capacity.pods'
+
+Also view all current pods to understand the distribution:
+
+kubectl get pods --all-namespaces -o wide
+
+If you find you need to increase CPU and memory resources for the pods you can use the following to apply the patch to all services using the following bash script:
 ./create-patches.sh
 
 You may find that the pods are failing to schedule because the nodes are at capacity ("Too many pods"). This is a cluster resource limitation issue. In that case you
