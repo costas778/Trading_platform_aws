@@ -538,8 +538,51 @@ kubectl get pods -n kube-system
 # List all running pods
 kubectl get pods --all-namespaces
 
+11) Dealing with the inital pod issue (certificates)
 
-11) Troubleshooting:
+When you run kubectl get pods --all-namespaces you will see many pods NOT running! 
+
+The installation requires post provisioning steps for the pods to load successful.
+
+You first need to create and attach SSL certifcates to the pods for them to successfully load.
+
+For SSL certificates, you have a few options:
+
+a. Use AWS Certificate Manager (ACM) - Recommended approach for EKS:
+
+# First create the certificate in ACM through AWS CLI
+aws acm request-certificate \
+    --domain-name "*.your-domain.com" \
+    --validation-method DNS \
+    --region us-east-1
+
+# Then create a secret from the ACM certificate
+aws acm get-certificate --certificate-arn <your-acm-certificate-arn> \
+    --region us-east-1 | \
+kubectl create secret tls trading-platform-certs \
+    --cert=<(echo "$CERT") \
+    --key=<(echo "$KEY")
+
+
+b. Or, if you're using self-signed certificates for development:
+
+NOTE: I used this option because my sandbox has limitations
+and does not support the recommended method.  
+
+Furthermore, this is instant rather than waiting between 5 and 30 minutes for the certificate to validate
+using ACM! 
+
+# Generate self-signed certificate
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout tls.key -out tls.crt \
+    -subj "/CN=*.your-domain.com"
+
+# Create the secret from generated certificates
+kubectl create secret tls trading-platform-certs \
+    --cert=tls.crt \
+    --key=tls.key
+
+12) Troubleshooting:
 
 ### The generic yet useful stuff
 
@@ -603,47 +646,7 @@ kubectl exec -it $(kubectl get pod -l app=backend -o jsonpath='{.items[0].metada
 
 
 
-### Dealing with the inital pod issue (certificates)
 
-The installation requires post provisioning steps for the pods to load successful.
-
-You first need to create and attach SSL certifcates to the pods for them to successfully load.
-
-For SSL certificates, you have a few options:
-
-a. Use AWS Certificate Manager (ACM) - Recommended approach for EKS:
-
-# First create the certificate in ACM through AWS CLI
-aws acm request-certificate \
-    --domain-name "*.your-domain.com" \
-    --validation-method DNS \
-    --region us-east-1
-
-# Then create a secret from the ACM certificate
-aws acm get-certificate --certificate-arn <your-acm-certificate-arn> \
-    --region us-east-1 | \
-kubectl create secret tls trading-platform-certs \
-    --cert=<(echo "$CERT") \
-    --key=<(echo "$KEY")
-
-
-b. Or, if you're using self-signed certificates for development:
-
-NOTE: I used this option because my sandbox has limitations
-and does not support the recommended method.  
-
-Furthermore, this is instant rather than waiting between 5 and 30 minutes for the certificate to validate
-using ACM! 
-
-# Generate self-signed certificate
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    -keyout tls.key -out tls.crt \
-    -subj "/CN=*.your-domain.com"
-
-# Create the secret from generated certificates
-kubectl create secret tls trading-platform-certs \
-    --cert=tls.crt \
-    --key=tls.key
 
 
 
