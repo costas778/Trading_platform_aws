@@ -1,3 +1,5 @@
+![Alt Text](./jsb2.png)
+
 ## Scenario:
 The company ABC Limited operates within the Fin-tech industry offers its own Trading platform as
 a service.
