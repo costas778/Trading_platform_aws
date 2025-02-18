@@ -282,7 +282,7 @@ This project uses a number of different configuration files:
    - Copy set-env.sh.template to set-env.sh and fill in your values
 
 
-
+''' git clone 
 
 1) Ensure your AWS setup is no issue
 First, check if there are any conflicting AWS environment variables:
