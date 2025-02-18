@@ -286,7 +286,7 @@ This project uses a number of different configuration files:
 
 git clone https://github.com/costas778/Trading_platform_aws.git
 
-1) Ensure your AWS setup is no issue
+1) Reconfigure AWS CLI:
 First, check if there are any conflicting AWS environment variables:
 
 I find this a useful exercise as I use various sandbox environments to create and update cpde which is on a timer.
@@ -305,14 +305,22 @@ Remove the existing credentials:
 rm -rf ~/.aws/credentials
 rm -rf ~/.aws/config
 
-
-Reconfigure AWS CLI:
+Now login into your AWS environments:
 
 aws configure
+Access Key: <place here> enter
+Secret Key: <place here> enter
+Region: east-us-1 enter
+enter again
+
+Confirm settings with aws configure list
 
 
 2) Clear any old terraform files
 tip: use multiple bash shells concurrently for this provisioning.
+
+NOTE: If you have never provisioned this environment before there is no need to
+do this! 
 
 cd ~/abc/trading-platform/infrastructure/terraform/environments/dev$
 
@@ -353,6 +361,8 @@ aws route53 create-hosted-zone --name abc-trading-dev.com --caller-reference $(d
     },
     "DelegationSet": {
 
+   **The key is this "Id": "/hostedzone/Z097448413EYC12C8OCQ4"**
+
 4) Obtain subnet details and place them within the infrastructure > terraform > environments > dev* > main.tf file
 
 
@@ -382,51 +392,47 @@ set-env.sh
 
 #!/bin/bash
 # AWS credentials
-export AWS_ACCESS_KEY_ID="AKIA2UC3ACJ4OT5VV76B"
-export AWS_SECRET_ACCESS_KEY="VeshtaINlSzsdYBa5Hv+VO+i7qh5hHzux0QPClex"
+export AWS_ACCESS_KEY_ID="<your access key>"
+export AWS_SECRET_ACCESS_KEY="<Your secret access key>"
 export AWS_DEFAULT_REGION="us-east-1"
 
 # Sensitive variables
-export TF_VAR_database_password="Harvee777"
+export TF_VAR_database_password="<password>"
 
 # Application runtime configuration
 export BUILD_VERSION="1.0.0"
-export DOMAIN_NAME="abc-trading-dev.com"
-export HOSTED_ZONE_ID="Z01828013463Z9CPR1858"
+export DOMAIN_NAME="<xxx-xxxxxxxx-dev.com>"
+export HOSTED_ZONE_ID="Zxxxxxxxxxxxxxxxxxx"
 
 # Infrastructure configuration
-export TF_STATE_BUCKET="bucket730335285880"
+export TF_STATE_BUCKET="bucketxxxxxxxxxxxx"
 export TF_LOCK_TABLE="terraform-state-lock"
-export CLUSTER_NAME="abc-trading-dev"
+export CLUSTER_NAME="<xxx-xxxxxxxx-dev>"
 export MICROSERVICES="axon-server backend-services frontend"
 
-Note: I use the number of the account to create a unique bucket name.
-
-
-
-
+Note: I used the number of the account to create a unique bucket name.
 
 .env
 
 # Application runtime configuration
 BUILD_VERSION=1.0.0
 DOMAIN_NAME=abc-trading-dev.com
-HOSTED_ZONE_ID="Z01828013463Z9CPR1858"
+HOSTED_ZONE_ID="Zxxxxxxxxxxxxxxxxxxxxx"
 
 # AWS Configuration
-TF_STATE_BUCKET="bucket730335285880"
+TF_STATE_BUCKET="bucketxxxxxxxxxxxxxxxxx"
 TF_LOCK_TABLE="terraform-state-lock"
 AWS_DEFAULT_REGION="us-east-1"
 
 # Cluster Configuration
-CLUSTER_NAME="abc-trading-dev"
+CLUSTER_NAME="<xxx-xxxxxxxxx-dev>"
 MICROSERVICES="axon-server backend-services frontend"
 
 # Database Configuration
 DB_USERNAME="dbmaster"  # From terraform.tfvars
-DB_PASSWORD="${TF_VAR_database_password}"  # From set-env.sh (Harvee777)
+DB_PASSWORD="${TF_VAR_database_password}"  # From set-env.sh 
 DB_PORT="5432"  # Standard PostgreSQL port
-DB_INSTANCE_NAME="db_dev_730335285880"  # From terraform.tfvars
+DB_INSTANCE_NAME="db_dev_xxxxxxxxxxxxxxxx"  # From terraform.tfvars
 
 # Service Groups (new additions needed for microservices architecture)
 CORE_SERVICES="authentication authorization user-management"
@@ -445,7 +451,7 @@ environment         = "dev"
 project_name        = "abc-trading"
 cluster_name        = "abc-trading-dev"
 vpc_cidr            = "10.0.0.0/16"
-database_name       = "db_dev_730335285880"
+database_name       = "db_dev_xxxxxxxxxxxxxxx"
 database_username   = "dbmaster"
 
 availability_zones  = ["us-east-1a", "us-east-1b", "us-east-1c"]
@@ -486,14 +492,17 @@ Initializing modules...
 │ If you wish to attempt automatic migration of the state, use "terraform init -migrate-state".
 │ If you wish to store the current configuration with no changes to the state, use "terraform init -reconfigure".
 
+Go to a bash shell and run the following:
 ~/abc/trading-platform/infrastructure/terraform/environments/dev$ terraform init -reconfigure
 
 Note: the directory will depend on the type of deployment. In this case its a dev
 
-9) When you complete run the services after the initial provision to give you a total of 24 services
+9) When you complete run the services after the initial provision to give you a total of 24 or so services
 
 # Count total services
 kubectl get services --all-namespaces | wc -l
+
+You should, initally, get around 3
 
 # Name of the services
 
@@ -506,7 +515,8 @@ kubectl get svc -A -o custom-columns=NAMESPACE:.metadata.namespace,NAME:.metadat
 An example of seeing services under a particular namespace
 kubectl get svc -n kube-system
 
-deploy-services.sh
+To get the full services deployed run the following:
+./deploy-services.sh
 
 # Run the same command account
 kubectl get services --all-namespaces | wc -l
@@ -528,25 +538,13 @@ kubectl get pods -n kube-system
 # List all running pods
 kubectl get pods --all-namespaces
 
-est API connectivity:
-
-# Test frontend to backend communication
-kubectl exec -it $(kubectl get pod -l app=frontend -o jsonpath='{.items[0].metadata.name}') -- curl -k https://backend-service
-
-# Test backend to Axon server
-kubectl exec -it $(kubectl get pod -l app=backend -o jsonpath='{.items[0].metadata.name}') -- curl -k http://axon-server:8024/actuator/health
-
-
-Database connectivity test:
-
-# Test backend to database connection
-kubectl exec -it $(kubectl get pod -l app=backend -o jsonpath='{.items[0].metadata.name}') -- nc -zv database-service 5432
-
 
 11) Troubleshooting:
 
+The generic yet useful stuff
+
 kubectl get events --sort-by='.lastTimestamp'
-kubectl describe pod api-gateway-69f8b876d9-crw7d
+kubectl describe pod api-gateway-xxxxxxxxxxxxxxxxx
 kubectl describe nodes
 
 # Fix image pull policy in deployments
@@ -588,4 +586,21 @@ SG_ID=$(aws eks describe-cluster --name abc-trading-dev --query 'cluster.resourc
 
 # Check security group rules
 aws ec2 describe-security-groups --group-ids $SG_ID
+
+Test API connectivity:
+
+# Test frontend to backend communication
+kubectl exec -it $(kubectl get pod -l app=frontend -o jsonpath='{.items[0].metadata.name}') -- curl -k https://backend-service
+
+# Test backend to Axon server
+kubectl exec -it $(kubectl get pod -l app=backend -o jsonpath='{.items[0].metadata.name}') -- curl -k http://axon-server:8024/actuator/health
+
+
+Database connectivity test:
+
+# Test backend to database connection
+kubectl exec -it $(kubectl get pod -l app=backend -o jsonpath='{.items[0].metadata.name}') -- nc -zv database-service 5432
+
+
+
 
