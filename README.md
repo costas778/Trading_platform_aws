@@ -1,5 +1,8 @@
 ![Alt text](https://github.com/costas778/Trading_platform_aws/blob/main/intro.png)
-
+![Alt text](https://github.com/costas778/Trading_platform_aws/blob/main/error1.png)
+![Alt text](https://github.com/costas778/Trading_platform_aws/blob/main/cert1.png)
+![Alt text](https://github.com/costas778/Trading_platform_aws/blob/main/cert2.png)
+![Alt text](https://github.com/costas778/Trading_platform_aws/blob/main/restart.png)
 
 ## Scenario:
 The company ABC Limited operates within the Fin-tech industry offers its own Trading platform as
@@ -551,7 +554,7 @@ kubectl get pods -n kube-system
 kubectl get pods --all-namespaces
 
 11) Dealing with the inital pod issue (certificates)
-![Alt text](https://github.com/costas778/Trading_platform_aws/blob/main/error1.png)
+
 
 When you run kubectl get pods --all-namespaces you will see many pods NOT running! 
 
