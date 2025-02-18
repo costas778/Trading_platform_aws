@@ -286,6 +286,8 @@ This project uses a number of different configuration files:
 # Let's us begin!
 **NOTE:** This whole environment was created in an AWS sandbox that is destroyed with the account number!
 
+For the above files it is best to pass password and other sensitive parameters using AWS Key Manager.
+
 
 Prerequisites
 ./install-prerequisites.sh 
