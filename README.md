@@ -655,14 +655,49 @@ Database connectivity test:
 kubectl exec -it $(kubectl get pod -l app=backend -o jsonpath='{.items[0].metadata.name}') -- nc -zv database-service 5432
 
 
-13) Vertical scaling of the pods
+13) Horizontaly and Vertical scaling of the pods
+
+# Horizontaly
+First, check the current node capacity:
+
+kubectl get nodes
+kubectl describe nodes
+
+Check all running pods to see what's consuming the capacity:
+
+kubectl get pods --all-namespaces
+
+You have a few options to resolve this:
+
+a. Scale up the cluster (Recommended):
+
+# Get current nodegroup name
+aws eks list-nodegroups --cluster-name abc-trading-dev
+
+# Scale up the nodegroup
+aws eks update-nodegroup-config \
+    --cluster-name abc-trading-dev \
+    --nodegroup-name <your-nodegroup-name> \
+    --scaling-config minSize=3,maxSize=6,desiredSize=3
+
+b. Or clean up unnecessary pods:
+
+# List all pods including their node allocation
+kubectl get pods -o wide --all-namespaces
+
+# Delete any unnecessary pods
+kubectl delete pod <pod-name>
+
+# vertically 
+
 If you need help to increase CPU and memory resources for the pods you can use the following to apply the patch to all services using the following bash script:
 ./create-patches.sh
 
-If you need to scale down because your maxing out your resources you can apply the following patch to all services instead using this alternative bash script:
+You may find that the pods are failing to schedule because the nodes are at capacity ("Too many pods"). This is a cluster resource limitation issue. In that case you
+will need to scale down because your maxing out your resources you can apply the following patch to all services instead using this alternative bash script:
 ./update-deployments.sh
 
-
+Both scripts are configuriable with your own metric needs! 
 
 
 
