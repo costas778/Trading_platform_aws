@@ -1,5 +1,5 @@
 ![Alt text](https://github.com/costas778/Trading_platform_aws/blob/main/intro.png)
-![Alt text](https://github.com/costas778/Trading_platform_aws/blob/main/error1.png)
+
 
 ## Scenario:
 The company ABC Limited operates within the Fin-tech industry offers its own Trading platform as
