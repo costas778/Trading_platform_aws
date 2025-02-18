@@ -1,4 +1,4 @@
-![Alt Text]("./Screenshot 2025-02-18 192023.png")
+
 
 ## Scenario:
 The company ABC Limited operates within the Fin-tech industry offers its own Trading platform as
@@ -541,6 +541,8 @@ kubectl get pods -n kube-system
 kubectl get pods --all-namespaces
 
 11) Dealing with the inital pod issue (certificates)
+
+![Alt Text](./error1.png)
 
 When you run kubectl get pods --all-namespaces you will see many pods NOT running! 
 
