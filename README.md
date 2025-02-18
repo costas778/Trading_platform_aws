@@ -281,8 +281,10 @@ This project uses a number of different configuration files:
    - Never committed to version control
    - Copy set-env.sh.template to set-env.sh and fill in your values
 
+# Let's us begin!
+**NOTE:** This whole environment was created in an AWS sandbox that is destroyed with the account number!
 
-''' git clone 
+git clone https://github.com/costas778/Trading_platform_aws.git
 
 1) Ensure your AWS setup is no issue
 First, check if there are any conflicting AWS environment variables:
