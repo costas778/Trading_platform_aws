@@ -286,6 +286,13 @@ This project uses a number of different configuration files:
 # Let's us begin!
 **NOTE:** This whole environment was created in an AWS sandbox that is destroyed with the account number!
 
+
+Prerequisites
+./install-prerequisites.sh 
+
+Note: the above is for the Ubuntu distro using WSL2
+Tip: I use a Codium extention that works as well as VSC. 
+
 git clone https://github.com/costas778/Trading_platform_aws.git
 
 1) Reconfigure AWS CLI:
@@ -542,8 +549,6 @@ kubectl get pods --all-namespaces
 
 11) Dealing with the inital pod issue (certificates)
 
-![Error Image](https://github.com/costas778/Trading_platform_aws/error1.png)
-
 
 When you run kubectl get pods --all-namespaces you will see many pods NOT running! 
 
@@ -650,6 +655,12 @@ Database connectivity test:
 kubectl exec -it $(kubectl get pod -l app=backend -o jsonpath='{.items[0].metadata.name}') -- nc -zv database-service 5432
 
 
+13) Vertical scaling of the pods
+If you need help to increase CPU and memory resources for the pods you can use the following to apply the patch to all services using the following bash script:
+./create-patches.sh
+
+If you need to scale down because your maxing out your resources you can apply the following patch to all services instead using this alternative bash script:
+./update-deployments.sh
 
 
 
