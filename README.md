@@ -542,7 +542,7 @@ kubectl get pods --all-namespaces
 
 11) Dealing with the inital pod issue (certificates)
 
-![Alt Text](./error1.png)
+![Alt Text](error1.png)
 
 When you run kubectl get pods --all-namespaces you will see many pods NOT running! 
 
