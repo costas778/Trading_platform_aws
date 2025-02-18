@@ -25,7 +25,7 @@ whilst minimising human errors and repetition?
 # Your setup will be similar to the following:
 
 #tree
-├── Bash.txt
+- ├── Bash.txt
 ├── README.md
 ├── backups
 │   ├── backup_20250214_132556.tar.gz
