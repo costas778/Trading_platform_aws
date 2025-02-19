@@ -490,6 +490,8 @@ be global to the application.
 7) Ensure you have all the prerequisites installed by running install-prerequisites.sh if this is your first time
 working on a system
 
+If there is a failure it is likely you have not run source set-env.sh.
+
 8) Run the wrapper main.sh file with the deployment type.
 
 e.g. ./main.sh dev
