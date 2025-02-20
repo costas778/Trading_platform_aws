@@ -672,17 +672,17 @@ variables within set-env.sh similar to below. It also sets up an IAM policy for 
 
 #!/bin/bash
 # AWS credentials
-export AWS_ACCESS_KEY_ID="AKIATCKAM56GYXFIHMWG" <************************************* Needs to be initally current (Sandbox created)
-export AWS_SECRET_ACCESS_KEY="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" <************************************* Needs to be initally current (Sandbox created)
+export AWS_ACCESS_KEY_ID="AKIATCKAM56GYXFIHMWG" <************************************* Needs to be initally current (Sandbox created and now expired)
+export AWS_SECRET_ACCESS_KEY="CBKDyTwi7EtZ/yq7DSWGpSZGH96e25xiLJG+lLrb" <************************************* Needs to be initally current (Sandbox created and now expired)
 export AWS_DEFAULT_REGION="us-east-1"
 
 # Sensitive variables
-export TF_VAR_database_password="xxxxxxxxx" ************************************* (Try to not use special characters. Long alpha numberics and uppercases are fine)
+export TF_VAR_database_password="xxxxxxxxx" <************************************* (Try to not use special characters. Long alpha numberics and uppercases are fine)
 
 # Application runtime configuration
 export BUILD_VERSION="1.0.0"
 export DOMAIN_NAME="abc-trading-dev.com"
-export HOSTED_ZONE_ID="Z06837973EPZKAJ7CZ8HV"
+export HOSTED_ZONE_ID="Z06837973EPZKAJ7CZ8HV" <**********************************(Sandbox created and now expired)
 
 # Infrastructure configuration
 export TF_STATE_BUCKET="bucket211125333901"
@@ -744,6 +744,40 @@ export MICROSERVICES="axon-server backend-services frontend"
 set +a
 
 You can even run setup_secrets_configuration.sh -d as DRY RUN mode as a test.
+
+ ./setup_secrets_configuration.sh -d
+[2025-02-20 13:28:55] [INFO] Starting secrets configuration setup...
+[2025-02-20 13:28:55] [DRY-RUN] Running in dry-run mode
+[2025-02-20 13:28:56] [INFO] Loading environment from set-env.sh
+[2025-02-20 13:28:56] [DRY-RUN] Would source /home/costas778/abc/trading-platform/set-env.sh
+[2025-02-20 13:28:56] [INFO] Setting up IAM permissions for Secrets Manager...
+[2025-02-20 13:28:57] [DRY-RUN] Would create IAM policy for: arn:aws:iam::339712714659:user/cloud_user
+[2025-02-20 13:28:57] [DRY-RUN] Would setup necessary permissions for Secrets Manager
+Would you like to migrate existing credentials? (y/n): y
+[2025-02-20 13:29:18] [INFO] Please enter database credentials
+Enter database username [dbmaster]: 
+Enter database password: 
+Confirm database password: 
+[2025-02-20 13:29:35] [DRY-RUN] Would use username: dbmaster
+[2025-02-20 13:29:35] [DRY-RUN] Would use password: [REDACTED]
+[2025-02-20 13:29:35] [DRY-RUN] Would create/update secret: db-credentials
+[2025-02-20 13:29:35] [DRY-RUN] Value would be: {
+    "username": "dbmaster",
+    "password": "xxxxxxxxxxx",
+    "host": "db_dev_xxxxxxxxxxxxxxxx",
+    "port": "5432",
+    "engine": "postgres"
+}
+[2025-02-20 13:29:35] [INFO] Testing secret retrieval...
+[2025-02-20 13:29:35] [DRY-RUN] Would test retrieving secrets:
+[2025-02-20 13:29:35] [DRY-RUN] Would verify db-credentials exists and is accessible
+[2025-02-20 13:29:35] [DRY-RUN] Would validate db-credentials format and content
+[2025-02-20 13:29:35] [INFO] Testing configuration...
+[2025-02-20 13:29:35] [DRY-RUN] Would source set-env.sh
+[2025-02-20 13:29:35] [DRY-RUN] Would test database connection
+[2025-02-20 13:29:35] [DRY-RUN] Would verify database connectivity using provided credentials
+[2025-02-20 13:29:35] [DRY-RUN] Configuration setup would complete successfully
+[2025-02-20 13:29:35] [DRY-RUN] Would create backup at: /home/costas778/abc/trading-platform/backups/20250220_132855
 
 
 Finally, verify_secrets_setup.sh verifies all is well with your Secrets setup.
