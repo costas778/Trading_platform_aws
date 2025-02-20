@@ -1,4 +1,4 @@
-
+![Error Image](https://github.com/costas778/Trading_platform_aws/blob/main/banner.PNG)
 
 ## Scenario:
 The company ABC Limited operates within the Fin-tech industry offers its own Trading platform as
