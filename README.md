@@ -652,7 +652,101 @@ kubectl exec -it $(kubectl get pod -l app=backend -o jsonpath='{.items[0].metada
 
 
 
-###UPDATE
+###UPDATE (20th Febuary 2025)#####################################################
+
+The process outlined above works well for those working in a developmental framework that merely wish to engage in POC.
+
+However, security is important and parimeters like plain text passwords will NOT do in a professional environment.
+
+Hence, a few extra bash scripts were added to the process to enhance security using key Manager.
+
+To facilatate this a few extra scripts are added:
+
+**backup_secrets_config.sh **- this backups the configurational files (rather useful and gives you the ability to restore) 
+
+**setup_secrets_configuration.sh** - This scripts grabs configuration information from set-env.sh, sets up Key Manager for you in AWS the replaces
+variables within set-env.sh similar to below. It also sets up an IAM policy for your logged in AWS account to have permissions to work with Key Manager.
 
 
+#set-env.sh (current)
+
+#!/bin/bash
+# AWS credentials
+export AWS_ACCESS_KEY_ID="AKIATCKAM56GYXFIHMWG" <************************************* Needs to be initally current (Sandbox created)
+export AWS_SECRET_ACCESS_KEY="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" <************************************* Needs to be initally current (Sandbox created)
+export AWS_DEFAULT_REGION="us-east-1"
+
+# Sensitive variables
+export TF_VAR_database_password="xxxxxxxxx" ************************************* (Try to not use special characters. Long alpha numberics and uppercases are fine)
+
+# Application runtime configuration
+export BUILD_VERSION="1.0.0"
+export DOMAIN_NAME="abc-trading-dev.com"
+export HOSTED_ZONE_ID="Z06837973EPZKAJ7CZ8HV"
+
+# Infrastructure configuration
+export TF_STATE_BUCKET="bucket211125333901"
+export TF_LOCK_TABLE="terraform-state-lock"
+export CLUSTER_NAME="abc-trading-dev"
+export MICROSERVICES="axon-server backend-services frontend"
+
+#set-env.sh (Similar to what will appear when you run the script)
+
+#!/bin/bash
+set -a
+source .env
+
+# Function to load secrets from AWS Secrets Manager
+load_secrets() {
+    local secret_name="$1"
+    local secret_value
+    
+    secret_value=$(aws secretsmanager get-secret-value \
+        --secret-id "${SECRETS_PATH}/${secret_name}" \
+        --query 'SecretString' \
+        --output text)
+    
+    if [ $? -ne 0 ]; then
+        echo "Error loading secret: ${secret_name}" >&2
+        return 1
+    fi
+    
+    echo "${secret_value}"
+}
+
+# Load database credentials from Secrets Manager
+db_creds=$(load_secrets "db-credentials")
+if [ $? -eq 0 ]; then
+    export TF_VAR_database_username=$(echo $db_creds | jq -r '.username')
+    export TF_VAR_database_password=$(echo $db_creds | jq -r '.password')
+    export DB_USERNAME=${TF_VAR_database_username}
+    export DB_PASSWORD=${TF_VAR_database_password}
+fi
+
+# Load AWS credentials from Secrets Manager (if needed)
+aws_creds=$(load_secrets "aws-credentials")
+if [ $? -eq 0 ]; then
+    export AWS_ACCESS_KEY_ID=$(echo $aws_creds | jq -r '.access_key_id') 
+    export AWS_SECRET_ACCESS_KEY=$(echo $aws_creds | jq -r '.secret_access_key') 
+fi
+
+# Application runtime configuration
+export BUILD_VERSION="1.0.0"
+export DOMAIN_NAME="abc-trading-dev.com"
+export HOSTED_ZONE_ID="Z06837973EPZKAJ7CZ8HV"
+
+# Infrastructure configuration
+export TF_STATE_BUCKET="XXXXXXXXXXXXXXXXXX"
+export TF_LOCK_TABLE="terraform-state-lock"
+export CLUSTER_NAME="abc-trading-dev"
+export MICROSERVICES="axon-server backend-services frontend"
+
+set +a
+
+You can even run setup_secrets_configuration.sh -d as DRY RUN mode as a test.
+
+
+Finally, verify_secrets_setup.sh verifies all is well with your Secrets setup.
+
+###UPDATE (20th Febuary 2025)#####################################################
 
